@@ -52,7 +52,7 @@ python main.py
 ### Compilar el Ejecutable (PyInstaller)
 Si haces cambios y quieres generar tu propio `.exe`:
 ```powershell
-pyinstaller --noconfirm --onedir --windowed --name "KeyBinder" main.py
+.\venv\Scripts\pyinstaller KeyBinder.spec
 ```
 El resultado estará en la carpeta `dist/KeyBinder`.
 
