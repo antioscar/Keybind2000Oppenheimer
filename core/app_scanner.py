@@ -7,89 +7,8 @@ una lista de (nombre, ruta_ejecutable) para usarse en la GUI.
 """
 
 import os
-import subprocess
 import threading
 from typing import Callable, Optional
-
-# Intentar importar win32com para leer .lnk (si está disponible)
-try:
-    # Usamos un enfoque con PowerShell si win32com no está disponible
-    _HAS_WIN32COM = False
-except ImportError:
-    _HAS_WIN32COM = False
-
-
-def _read_lnk_target_powershell(lnk_path: str) -> Optional[str]:
-    """
-    Lee la ruta destino de un archivo .lnk usando PowerShell.
-
-    Args:
-        lnk_path: Ruta al archivo .lnk
-
-    Returns:
-        Ruta del ejecutable destino o None si falla.
-    """
-    try:
-        cmd = (
-            f'powershell -NoProfile -Command "'
-            f"$s = New-Object -ComObject WScript.Shell; "
-            f"$sc = $s.CreateShortcut('{lnk_path}'); "
-            f'$sc.TargetPath"'
-        )
-        result = subprocess.run(
-            cmd,
-            capture_output=True,
-            text=True,
-            timeout=5,
-            shell=True,
-        )
-        target = result.stdout.strip()
-        if target and os.path.exists(target):
-            return target
-        return target if target else None
-    except Exception:
-        return None
-
-
-def _scan_start_menu_folder(folder: str, results: dict[str, str]) -> None:
-    """
-    Escanea una carpeta del Menú Inicio recursivamente.
-
-    Args:
-        folder: Ruta de la carpeta a escanear.
-        results: Diccionario nombre -> ruta donde agregar resultados.
-    """
-    if not os.path.exists(folder):
-        return
-
-    for root, dirs, files in os.walk(folder):
-        for filename in files:
-            if filename.lower().endswith(".lnk"):
-                # Extraer nombre limpio (sin extensión)
-                name = os.path.splitext(filename)[0]
-
-                # Ignorar accesos directos de desinstalación
-                lower_name = name.lower()
-                if any(skip in lower_name for skip in [
-                    "uninstall", "desinstalar", "remove",
-                    "readme", "help", "manual", "release notes",
-                    "license", "website", "documentation",
-                ]):
-                    continue
-
-                lnk_path = os.path.join(root, filename)
-
-                # Intentar leer el destino del .lnk
-                target = _read_lnk_target_powershell(lnk_path)
-
-                if target:
-                    # Usar el target real como valor
-                    if name not in results:
-                        results[name] = target
-                else:
-                    # Si no podemos leer el .lnk, usar la ruta del .lnk mismo
-                    if name not in results:
-                        results[name] = lnk_path
 
 
 def _scan_start_menu_fast(folder: str, results: dict[str, str]) -> None:
