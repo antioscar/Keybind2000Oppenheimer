@@ -1,60 +1,144 @@
-# KeyBinder ⌨️🚀
+# KeyBinder
 
-KeyBinder es una aplicación de escritorio ligera y moderna para Windows que te permite crear y gestionar atajos de teclado globales personalizados. Con una interfaz limpia e inspirada en software profesional, KeyBinder funciona silenciosamente en segundo plano para potenciar tu productividad.
+Gestor de atajos de teclado globales para Windows. Básicamente, asignas una combinación de teclas a una acción (abrir un programa, una URL, ejecutar un comando, escribir texto) y funciona sin importar en qué ventana estés.
 
-## ✨ Características
+La interfaz está hecha con customtkinter y tiene un tema oscuro inspirado en Logitech G HUB. Al cerrar la ventana se va a la bandeja del sistema — la app sigue corriendo en background.
 
-*   **Atajos Globales:** Los atajos funcionan en cualquier lugar de Windows, sin importar qué aplicación tengas abierta.
-*   **Acciones Múltiples:** 
-    *   **Abrir Aplicación:** Lanza programas o archivos locales (`.exe`, `.txt`, etc.).
-    *   **Abrir URL:** Abre sitios web en tu navegador predeterminado.
-    *   **Escribir Texto:** Simula la escritura de bloques de texto (ideal para correos, firmas o respuestas rápidas).
-    *   **Ejecutar Comando:** Ejecuta comandos de consola de Windows (CMD/PowerShell) de forma invisible.
-*   **Totalmente en Segundo Plano:** Al cerrar la ventana, la aplicación se minimiza a la bandeja del sistema (System Tray) junto al reloj, consumiendo mínimos recursos.
-*   **Inicio Automático:** Se integra de forma nativa e invisible con el arranque de Windows para que tus atajos estén siempre listos al encender la PC.
-*   **Portable:** Los atajos se guardan en un archivo `.json` junto al ejecutable. ¡Puedes llevar la carpeta en un USB a cualquier PC!
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-only-0078D6?logo=windows&logoColor=white)
+![License](https://img.shields.io/badge/Licencia-libre-green)
 
-## 📥 Instalación y Uso (Usuarios)
+---
 
-No necesitas instalar Python ni usar la consola. Sigue estos pasos:
+## Qué hace
 
-1. Ve a la sección de [Releases](https://github.com/antioscar/Keybind2000Oppenheimer/releases) en la derecha de esta página.
-2. Descarga el archivo **`KeyBinder.zip`** de la última versión.
-3. Descomprime la carpeta en el lugar que prefieras (ej. en tus Documentos).
-4. Haz doble clic en **`KeyBinder.exe`**.
-5. ¡Crea tus atajos! Al darle a la "X" para cerrar, la app se minimizará a la barra de tareas.
+- **Atajos globales** — Funcionan en todo Windows, no solo dentro de la app
+- **Abrir aplicaciones** — Lanza cualquier `.exe` o archivo desde un atajo
+- **Abrir URLs** — Abre sitios en el navegador predeterminado
+- **Escribir texto** — Simula escritura (para firmas, templates, respuestas frecuentes)
+- **Ejecutar comandos** — Corre comandos CMD/PowerShell en silencio, sin abrir ventana
+- **System Tray** — Se minimiza al lado del reloj, consume casi nada de recursos
+- **Inicio con Windows** — Se configura automáticamente para arrancar con el sistema
+- **Portable** — Los atajos se guardan en un `.json` junto al ejecutable, te lo llevas en un USB y listo
 
-## 🛠️ Para Desarrolladores
+---
 
-Si quieres modificar el código fuente, la aplicación está construida enteramente en Python usando `customtkinter` para la interfaz gráfica y `keyboard` para la intercepción de eventos.
+## Descarga (usuarios)
+
+No necesitas Python ni consola ni nada.
+
+1. Ir a [Releases](https://github.com/antioscar/Keybind2000Oppenheimer/releases)
+2. Bajar `KeyBinder.zip` de la última versión
+3. Descomprimir donde quieras
+4. Doble clic en `KeyBinder.exe`
+5. Crear atajos. Al cerrar la ventana se queda en la bandeja
+
+---
+
+## Para desarrollo
 
 ### Requisitos
-*   Python 3.10+
-*   Windows OS
 
-### Configuración del Entorno
+- Python 3.10+
+- Windows (usa APIs nativas como `os.startfile`, registro de Windows, etc.)
+
+### Setup
+
 ```powershell
-# Clonar el repositorio
 git clone https://github.com/antioscar/Keybind2000Oppenheimer.git
 cd Keybind2000Oppenheimer
 
-# Crear y activar entorno virtual
 python -m venv venv
 .\venv\Scripts\activate
 
-# Instalar dependencias
 pip install -r requirements.txt
-
-# Ejecutar en modo desarrollo
-python main.py
 ```
 
-### Compilar el Ejecutable (PyInstaller)
-Si haces cambios y quieres generar tu propio `.exe`:
+### Correr
+
+```powershell
+# Normal (con consola de debug)
+python main.py
+
+# Sin consola (modo "producción local")
+.\venv\Scripts\pythonw.exe main.py
+
+# Iniciar directo en la bandeja
+.\venv\Scripts\pythonw.exe main.py --tray
+```
+
+También hay un `KeyBinder.bat` que lo lanza con doble clic.
+
+### Compilar el .exe
+
 ```powershell
 .\venv\Scripts\pyinstaller KeyBinder.spec
 ```
-El resultado estará en la carpeta `dist/KeyBinder`.
 
-## 📜 Licencia
-Este proyecto es de código abierto y de uso libre.
+El resultado queda en `dist/KeyBinder/`.
+
+---
+
+## Estructura del proyecto
+
+```
+keybinder/
+├── main.py                  # Punto de entrada
+├── gui/
+│   ├── app.py               # Ventana principal, conecta todo
+│   ├── components.py        # Cards, header, status bar, empty state
+│   ├── dialogs.py           # Modales (crear/editar atajo, confirmar borrado)
+│   ├── theme.py             # Colores, fuentes, dimensiones (paleta G HUB)
+│   └── icon_manager.py      # Descarga Font Awesome si no existe, registra la fuente
+├── core/
+│   ├── keybind_manager.py   # CRUD de atajos + persistencia a JSON
+│   ├── listener.py          # Registro de hotkeys globales via `keyboard`
+│   ├── storage.py           # Lectura/escritura del archivo de datos
+│   ├── tray_icon.py         # Icono en system tray con pystray
+│   ├── startup_manager.py   # Entrada en el registro de Windows para inicio automático
+│   ├── app_scanner.py       # Escanea Menú Inicio y Registro para sugerir apps
+│   └── utils.py             # Resolución de rutas (dev vs .exe congelado)
+├── assets/
+│   ├── icon.ico             # Icono de la app
+│   └── fonts/               # Font Awesome (se descarga automáticamente)
+├── data/
+│   └── keybinds.json        # Atajos guardados
+├── requirements.txt
+├── KeyBinder.spec           # Config de PyInstaller
+└── KeyBinder.bat            # Launcher rápido
+```
+
+---
+
+## Cómo funciona por dentro
+
+El flujo es bastante simple:
+
+1. `main.py` arranca `KeyBinderApp` (la ventana de customtkinter)
+2. `KeybindManager` carga los atajos desde `keybinds.json`
+3. `KeybindListener` registra cada atajo como hotkey global usando la librería `keyboard`
+4. Cuando detecta una combinación, ejecuta la acción en un hilo daemon aparte para no bloquear nada
+5. Al cerrar la ventana, `TrayManager` toma el control y la app sigue escuchando desde la bandeja
+
+Los atajos se guardan automáticamente en cada operación (crear, editar, borrar, toggle). El archivo vive junto al `.exe` en producción o en la raíz del proyecto en desarrollo.
+
+### Detalle sobre la tecla Windows
+
+Si un atajo incluye la tecla Windows (ej: `b+windows izquierda`), hay un hack en el listener que manda un `ctrl` fantasma después de suprimir la tecla. Esto evita que Windows interprete la liberación de Win como "abrir el Menú Inicio".
+
+---
+
+## Dependencias
+
+| Paquete | Para qué |
+|---|---|
+| `customtkinter` | Interfaz gráfica (tema oscuro nativo) |
+| `keyboard` | Interceptar teclas a nivel global |
+| `Pillow` | Procesamiento de imágenes para iconos |
+| `pystray` | Icono en el system tray |
+
+---
+
+## Licencia
+
+Código abierto, uso libre.
